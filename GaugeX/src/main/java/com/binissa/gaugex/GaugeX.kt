@@ -6,15 +6,9 @@ import android.content.Context
 import android.util.Log
 import android.view.View
 import com.binissa.api.annotations.GaugeXProcessor
-import com.binissa.core.data.repository.EventRepositoryImpl
-import com.binissa.core.di.ServiceLocator
 import com.binissa.core.domain.model.Event
 import com.binissa.core.domain.model.GaugeXConfig
-import com.binissa.plugin.logging.LogCollectionPlugin.LogLevel
-import com.binissa.plugin.performance.PerformanceEvent
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
+import com.binissa.plugins.performance.PerformanceEvent
 import okhttp3.OkHttpClient
 
 /**

@@ -1,4 +1,4 @@
-package com.binissa.plugin.performance.monitor
+package com.binissa.plugins.performance.monitor
 
 interface PerformanceMonitor {
     suspend fun initialize()

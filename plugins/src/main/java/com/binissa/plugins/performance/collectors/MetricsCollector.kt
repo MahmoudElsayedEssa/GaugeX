@@ -1,4 +1,4 @@
-package com.binissa.plugin.performance.collectors
+package com.binissa.plugins.performance.collectors
 
 interface MetricsCollector {
     suspend fun collect(): Map<String, Any>

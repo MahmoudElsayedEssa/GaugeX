@@ -1,4 +1,4 @@
-package com.binissa.plugin.performance.collectors
+package com.binissa.plugins.performance.collectors
 
 import android.content.Context
 import android.content.Intent

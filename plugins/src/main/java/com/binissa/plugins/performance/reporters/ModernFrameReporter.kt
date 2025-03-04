@@ -1,10 +1,10 @@
-package com.binissa.plugin.performance.reporters
+package com.binissa.plugins.performance.reporters
 
 import android.os.Handler
 import android.os.Looper
 import android.view.Choreographer
 import com.binissa.core.domain.model.Event
-import com.binissa.plugin.performance.PerformanceEvent
+import com.binissa.plugins.performance.PerformanceEvent
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlin.time.Duration.Companion.nanoseconds
 

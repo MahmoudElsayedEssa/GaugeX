@@ -1,4 +1,4 @@
-package com.binissa.plugin
+package com.binissa.plugins
 
 import android.content.Context
 import com.binissa.core.domain.model.Event

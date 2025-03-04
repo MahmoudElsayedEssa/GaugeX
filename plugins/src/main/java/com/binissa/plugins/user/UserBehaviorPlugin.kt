@@ -16,7 +16,7 @@ import androidx.fragment.app.FragmentActivity
 import androidx.fragment.app.FragmentManager
 import com.binissa.core.domain.model.Event
 import com.binissa.core.domain.model.EventType
-import com.binissa.plugin.GaugeXPlugin
+import com.binissa.plugins.GaugeXPlugin
 import com.binissa.plugins.R
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers

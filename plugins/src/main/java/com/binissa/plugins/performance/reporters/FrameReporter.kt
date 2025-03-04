@@ -1,4 +1,4 @@
-package com.binissa.plugin.performance.reporters
+package com.binissa.plugins.performance.reporters
 
 interface FrameReporter {
     fun start()

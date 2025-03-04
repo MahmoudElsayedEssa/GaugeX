@@ -1,4 +1,4 @@
-package com.binissa.plugin.performance.collectors
+package com.binissa.plugins.performance.collectors
 
 import com.binissa.core.domain.model.toMap
 import com.binissa.plugin.util.DeviceInfoHelper
@@ -12,3 +12,4 @@ class DeviceInfoCollector(
         return deviceInfo + appInfo
     }
 }
+

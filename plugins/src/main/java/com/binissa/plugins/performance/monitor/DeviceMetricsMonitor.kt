@@ -1,15 +1,15 @@
-package com.binissa.plugin.performance.monitor
+package com.binissa.plugins.performance.monitor
 
 import android.content.Context
 import android.util.Log
 import com.binissa.core.domain.model.Event
-import com.binissa.plugin.performance.PerformanceEvent
-import com.binissa.plugin.performance.collectors.BatteryMetricsCollector
-import com.binissa.plugin.performance.collectors.CpuMetricsCollector
-import com.binissa.plugin.performance.collectors.DeviceInfoCollector
-import com.binissa.plugin.performance.collectors.MemoryMetricsCollector
-import com.binissa.plugin.performance.collectors.NetworkMetricsCollector
 import com.binissa.plugin.util.DeviceInfoHelper
+import com.binissa.plugins.performance.PerformanceEvent
+import com.binissa.plugins.performance.collectors.BatteryMetricsCollector
+import com.binissa.plugins.performance.collectors.CpuMetricsCollector
+import com.binissa.plugins.performance.collectors.DeviceInfoCollector
+import com.binissa.plugins.performance.collectors.MemoryMetricsCollector
+import com.binissa.plugins.performance.collectors.NetworkMetricsCollector
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay

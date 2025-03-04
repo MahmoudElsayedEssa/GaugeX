@@ -1,4 +1,4 @@
-package com.binissa.plugin.performance.collectors
+package com.binissa.plugins.performance.collectors
 
 import android.util.Log
 import kotlinx.coroutines.Dispatchers

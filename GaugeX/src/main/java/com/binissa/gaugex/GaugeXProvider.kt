@@ -6,12 +6,11 @@ import com.binissa.core.di.ServiceLocator
 import com.binissa.core.domain.model.GaugeXConfig
 import com.binissa.core.domain.model.Event
 import com.binissa.core.domain.usecase.CoreModule
-import com.binissa.core.domain.usecase.CoreModuleImpl
-import com.binissa.plugin.PluginRegistry
+import com.binissa.plugins.PluginRegistry
 import com.binissa.plugin.crash.CrashReportingPlugin
 import com.binissa.plugin.logging.LogCollectionPlugin
 import com.binissa.plugin.network.NetworkMonitoringPlugin
-import com.binissa.plugin.performance.PerformanceMonitoringPlugin
+import com.binissa.plugins.performance.PerformanceMonitoringPlugin
 import com.binissa.plugin.user.UserBehaviorPlugin
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers

@@ -1,4 +1,4 @@
-package com.binissa.plugin.performance.monitor
+package com.binissa.plugins.performance.monitor
 
 import android.app.Activity
 import android.app.Application
@@ -6,7 +6,7 @@ import android.content.Context
 import android.os.Bundle
 import android.os.SystemClock
 import com.binissa.core.domain.model.Event
-import com.binissa.plugin.performance.PerformanceEvent
+import com.binissa.plugins.performance.PerformanceEvent
 import kotlinx.coroutines.flow.MutableSharedFlow
 
 class ActivityLifecycleMonitor(

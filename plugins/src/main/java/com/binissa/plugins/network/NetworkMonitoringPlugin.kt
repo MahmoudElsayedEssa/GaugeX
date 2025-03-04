@@ -6,7 +6,7 @@ import android.os.Build
 import android.util.Log
 import com.binissa.core.domain.model.Event
 import com.binissa.core.domain.model.EventType
-import com.binissa.plugin.GaugeXPlugin
+import com.binissa.plugins.GaugeXPlugin
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -21,7 +21,6 @@ import okhttp3.Request
 import okhttp3.Response
 import java.io.IOException
 import java.io.InputStream
-import java.lang.reflect.InvocationHandler
 import java.lang.reflect.Proxy
 import java.net.HttpURLConnection
 import java.net.URL

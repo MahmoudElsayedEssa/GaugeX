@@ -1,4 +1,4 @@
-package com.binissa.plugin.performance
+package com.binissa.plugins.performance
 
 import com.binissa.core.domain.model.Event
 import com.binissa.core.domain.model.EventType

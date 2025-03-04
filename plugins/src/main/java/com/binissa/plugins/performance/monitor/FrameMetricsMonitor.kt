@@ -1,13 +1,13 @@
-package com.binissa.plugin.performance.monitor
+package com.binissa.plugins.performance.monitor
 
 import android.content.Context
 import android.os.Build
 import android.os.Handler
 import android.os.Looper
 import com.binissa.core.domain.model.Event
-import com.binissa.plugin.performance.reporters.FrameReporter
-import com.binissa.plugin.performance.reporters.LegacyFrameReporter
-import com.binissa.plugin.performance.reporters.ModernFrameReporter
+import com.binissa.plugins.performance.reporters.FrameReporter
+import com.binissa.plugins.performance.reporters.LegacyFrameReporter
+import com.binissa.plugins.performance.reporters.ModernFrameReporter
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.MutableSharedFlow
 

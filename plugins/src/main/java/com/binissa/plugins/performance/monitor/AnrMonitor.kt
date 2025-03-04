@@ -1,10 +1,10 @@
-package com.binissa.plugin.performance.monitor
+package com.binissa.plugins.performance.monitor
 
 import android.os.Debug
 import android.os.Handler
 import android.os.Looper
 import com.binissa.core.domain.model.Event
-import com.binissa.plugin.performance.PerformanceEvent
+import com.binissa.plugins.performance.PerformanceEvent
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
