@@ -1,11 +1,7 @@
-package com.binissa.core.di
+package com.binissa.core.data.datasource.remote
 
-import com.binissa.core.data.datasource.remote.JsonSerializer
-
-// This should be a separate class
 class JsonSerializerImpl : JsonSerializer {
     override fun serialize(data: Any): String {
-        // Simple implementation for now
         return when (data) {
             is Map<*, *> -> mapToJson(data)
             is String -> "\"$data\""

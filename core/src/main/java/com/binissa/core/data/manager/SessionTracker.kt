@@ -5,14 +5,14 @@ import android.content.Context
 import android.content.SharedPreferences
 import com.binissa.core.data.datasource.local.EventDao
 import com.binissa.core.data.datasource.remote.JsonSerializer
-import com.binissa.core.data.repository.Session
+import com.binissa.core.domain.model.Session
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.util.UUID
 
 class SessionTracker(
     private val context: Context,
-    private val eventDao: EventDao,
+//    private val eventDao: EventDao,
     private val jsonSerializer: JsonSerializer,
     private val sessionTimeout: Long = 30 * 60 * 1000 // 30 minutes
 ) {

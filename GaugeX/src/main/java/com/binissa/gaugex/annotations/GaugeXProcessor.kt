@@ -5,7 +5,7 @@ package com.binissa.api.annotations
 import android.app.Activity
 import android.app.Application
 import android.os.Bundle
-import com.binissa.api.GaugeX
+import com.binissa.gaugex.GaugeX
 import java.lang.reflect.Method
 
 /**

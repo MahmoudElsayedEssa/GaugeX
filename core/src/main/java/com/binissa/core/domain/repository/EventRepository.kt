@@ -1,16 +1,9 @@
 package com.binissa.core.domain.repository
 
-
-import com.binissa.core.data.repository.MemoryLeakIndicator
-import com.binissa.core.data.repository.PerformanceRegression
-import com.binissa.core.data.repository.ScreenPerformance
 import com.binissa.core.domain.model.Event
 import com.binissa.core.domain.model.EventStatus
 import kotlinx.coroutines.flow.Flow
 
-/**
- * Repository interface for managing events
- */
 interface EventRepository {
     /**
      * Stores an event for later processing
@@ -19,8 +12,22 @@ interface EventRepository {
      */
     suspend fun storeEvent(event: Event): Result<Unit>
 
-    suspend fun getTotalEventCount(): Int
+    /**
+     * Stores multiple events in a batch operation
+     * @param events List of events to store
+     * @return Success status
+     */
+    suspend fun storeEvents(events: List<Event>): Result<Unit>
 
+    /**
+     * Get the total count of stored events
+     */
+    suspend fun getTotalEventCount(): Result<Int>
+
+    /**
+     * Get database size in bytes
+     */
+    suspend fun getDatabaseSize(): Result<Long>
 
     /**
      * Retrieves all events with the given status
@@ -42,10 +49,10 @@ interface EventRepository {
      * @param olderThan Events older than this timestamp will be purged
      * @return Number of events purged
      */
-    suspend fun purgeOldEvents(olderThan: Long): Int
+    suspend fun purgeOldEvents(olderThan: Long): Result<Int>
 
-
-    suspend fun getSlowestScreens(limit: Int = 5): List<ScreenPerformance>
-    suspend fun getPerformanceRegressions(): List<PerformanceRegression>
-    suspend fun getPotentialMemoryLeaks(): List<MemoryLeakIndicator>
+    /**
+     * Optimizes the database storage
+     */
+    suspend fun optimizeDatabase(): Result<Unit>
 }

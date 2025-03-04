@@ -8,9 +8,6 @@ import com.binissa.core.domain.model.PerformanceEvent
 import com.binissa.core.domain.model.Event
 import com.binissa.core.domain.model.EventStatus
 
-/**
- * Mapper for converting between domain Event and data EventEntity
- */
 class EventMapper(
     private val jsonSerializer: JsonSerializer,
     private val sessionTracker: SessionTracker
@@ -46,7 +43,7 @@ class EventMapper(
             }
             is NetworkEvent -> {
                 category = "network"
-                name = event.url?.let { "${event.method} " } ?: event.method
+                name = event.url?.let { "${event.method} $it" } ?: event.method
                 duration = event.duration
                 // Extract network data in a standardized form
                 metadata["status_code"] = event.statusCode
@@ -60,8 +57,11 @@ class EventMapper(
             }
         }
 
-        // Capture device state for context
-//        val deviceState = getDeviceState()
+        // Get current device state
+        val deviceState = collectDeviceState()
+
+        // Add session information
+        val sessionId = sessionTracker.getCurrentSessionId()
 
         return EventEntity(
             id = event.id,
@@ -73,13 +73,31 @@ class EventMapper(
             name = name,
             duration = duration,
             metadataJson = jsonSerializer.serialize(metadata),
-            sessionId = sessionTracker.getCurrentSessionId(),
-            deviceState = jsonSerializer.serialize(5),
+            sessionId = sessionId,
+            deviceState = jsonSerializer.serialize(deviceState),
             priority = calculateEventPriority(event),
             retryCount = 0
         )
     }
 
+    /**
+     * Collects current device state for context
+     */
+    private fun collectDeviceState(): Map<String, Any> {
+        // This would typically include information like:
+        // - Battery level
+        // - Network connectivity
+        // - Memory usage
+        // - Foreground/background state
+        // For simplicity, we'll return a basic map
+        return mapOf(
+            "timestamp" to System.currentTimeMillis()
+        )
+    }
+
+    /**
+     * Calculate priority for event processing and retention
+     */
     private fun calculateEventPriority(event: Event): Int {
         // Assign priority (0-100) based on importance
         return when (event) {
@@ -95,9 +113,20 @@ class EventMapper(
                     else -> 30
                 }
             }
+            is NetworkEvent -> {
+                // High priority for errors
+                if (event.error != null) 80
+                // Higher priority for server errors
+                else if (event.statusCode >= 500) 70
+                // Medium priority for client errors
+                else if (event.statusCode >= 400) 60
+                // Normal priority for successful responses
+                else 50
+            }
             else -> 50 // Default priority
         }
     }
+
     /**
      * Maps an EventEntity to a domain Event
      */

@@ -2,70 +2,96 @@ package com.binissa.core.data.repository
 
 import android.content.Context
 import android.util.Log
-import androidx.room.RoomDatabase
-import com.binissa.core.data.analytics.AnalyticsEngine
 import com.binissa.core.data.datasource.local.EventDao
 import com.binissa.core.data.datasource.remote.JsonSerializer
+import com.binissa.core.data.mapper.EventMapper
 import com.binissa.core.domain.model.Event
 import com.binissa.core.domain.model.EventStatus
 import com.binissa.core.domain.repository.EventRepository
-import com.binissa.core.data.mapper.EventMapper
 import kotlinx.coroutines.CoroutineDispatcher
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
 import java.io.File
 
-/**
- * Implementation of EventRepository using Room for local storage
- */
 class EventRepositoryImpl(
     private val eventDao: EventDao,
-    private val eventMapper: EventMapper,
+    val eventMapper: EventMapper,
     private val jsonSerializer: JsonSerializer,
     private val context: Context,
-    private val analyticsService: AnalyticsEngine,
-    private val ioDispatcher: CoroutineDispatcher = Dispatchers.IO
+    private val ioDispatcher: CoroutineDispatcher
 ) : EventRepository {
+
+    private val TAG = "EventRepositoryImpl"
 
     override suspend fun storeEvent(event: Event): Result<Unit> = withContext(ioDispatcher) {
         try {
-            Log.d("EventRepository", "About to store event: ${event.id} of type ${event.type}")
+            Log.d(TAG, "Storing event: ${event.id} of type ${event.type}")
 
             // Convert domain event to entity
             val entity = eventMapper.mapToEntity(event, EventStatus.PENDING)
 
             // Insert into database
             eventDao.insertEvent(entity)
-            Log.d("EventRepository", "Successfully stored event: ${event.id}")
+            Log.d(TAG, "Successfully stored event: ${event.id}")
 
             Result.success(Unit)
         } catch (e: Exception) {
-            Log.e("EventRepository", "Failed to store event ${event.id}: ${e.message}", e)
+            Log.e(TAG, "Failed to store event ${event.id}: ${e.message}", e)
             Result.failure(e)
         }
     }
 
-    override fun getEventsByStatus(status: EventStatus): Flow<List<Event>> = flow {
-        eventDao.getEventsByStatus(status.name)
+    override suspend fun storeEvents(events: List<Event>): Result<Unit> =
+        withContext(ioDispatcher) {
+            try {
+                if (events.isEmpty()) {
+                    return@withContext Result.success(Unit)
+                }
+
+                Log.d(TAG, "Storing batch of ${events.size} events")
+
+                // Convert all domain events to entities
+                val entities = events.map { event ->
+                    eventMapper.mapToEntity(event, EventStatus.PENDING)
+                }
+
+                // Insert all in a single transaction
+                eventDao.insertEvents(entities)
+                Log.d(TAG, "Successfully stored batch of ${events.size} events")
+
+                Result.success(Unit)
+            } catch (e: Exception) {
+                Log.e(TAG, "Failed to store batch of ${events.size} events: ${e.message}", e)
+                Result.failure(e)
+            }
+        }
+
+    override fun getEventsByStatus(status: EventStatus): Flow<List<Event>> {
+        return eventDao.getEventsByStatus(status.name)
             .map { entities -> entities.mapNotNull { eventMapper.mapFromEntity(it) } }
-            .collect { emit(it) }
-    }.flowOn(ioDispatcher)
+            .catch { e ->
+                Log.e(TAG, "Error getting events by status: ${e.message}", e)
+                throw e
+            }
+            .flowOn(ioDispatcher)
+    }
 
     override suspend fun updateEventStatus(eventId: String, status: EventStatus): Result<Unit> =
         withContext(ioDispatcher) {
             try {
                 eventDao.updateEventStatus(eventId, status.name)
+                Log.d(TAG, "Updated event $eventId status to ${status.name}")
                 Result.success(Unit)
             } catch (e: Exception) {
+                Log.e(TAG, "Failed to update event status: ${e.message}", e)
                 Result.failure(e)
             }
         }
 
-    override suspend fun purgeOldEvents(olderThan: Long): Int = withContext(ioDispatcher) {
+    override suspend fun purgeOldEvents(olderThan: Long): Result<Int> = withContext(ioDispatcher) {
         try {
             // First, purge old events based on timestamp
             val purgeCount = eventDao.deleteEventsOlderThan(olderThan)
@@ -77,72 +103,62 @@ class EventRepositoryImpl(
             if (count > maxEventCount) {
                 // Keep newest events, delete oldest excess events
                 val excessCount = count - maxEventCount
-                val deletedCount = eventDao.deleteOldestEvents(excessCount)
-                Log.d(
-                    "EventRepository",
-                    "Purged $deletedCount excess events (over limit of $maxEventCount)"
-                )
-                return@withContext purgeCount + deletedCount
+                val deletedCount = eventDao.deleteEventsOlderThan(excessCount.toLong())
+                Log.d(TAG, "Purged $deletedCount excess events (over limit of $maxEventCount)")
+                return@withContext Result.success(purgeCount + deletedCount)
             }
 
-            Log.d("EventRepository", "Purged $purgeCount old events")
-            purgeCount
+            Log.d(TAG, "Purged $purgeCount old events")
+            Result.success(purgeCount)
         } catch (e: Exception) {
-            Log.e("EventRepository", "Failed to purge events: ${e.message}", e)
-            0
-        }
-    }
-
-    override suspend fun getTotalEventCount(): Int = withContext(ioDispatcher) {
-        try {
-            eventDao.getEventCount()
-        } catch (e: Exception) {
-            Log.e("EventRepository", "Failed to get event count: ${e.message}")
-            0
-        }
-    }
-
-    suspend fun getDatabaseSize(): Long = withContext(ioDispatcher) {
-        try {
-            val dbFile = File(context.getDatabasePath("gaugex_events.db").path)
-            if (dbFile.exists()) {
-                return@withContext dbFile.length()
-            }
-            0L
-        } catch (e: Exception) {
-            Log.e("EventRepository", "Failed to get database size: ${e.message}")
-            0L
-        }
-    }
-
-    suspend fun optimizeDatabase(): Result<Unit> = withContext(ioDispatcher) {
-        try {
-            // First, ensure all processed events are removed
-            val purgedCount = eventDao.deleteEventsByStatus(EventStatus.TRANSMITTED.name)
-            Log.d("EventRepository", "Removed $purgedCount processed events")
-
-            // Execute VACUUM to reclaim space
-            val db = (eventDao as? RoomDatabase)?.openHelper?.writableDatabase
-            db?.execSQL("VACUUM")
-
-            Log.d("EventRepository", "Database optimized with VACUUM")
-            Result.success(Unit)
-        } catch (e: Exception) {
-            Log.e("EventRepository", "Failed to optimize database: ${e.message}", e)
+            Log.e(TAG, "Failed to purge events: ${e.message}", e)
             Result.failure(e)
         }
     }
 
-    // Analytics methods delegated to AnalyticsService
-    override suspend fun getSlowestScreens(limit: Int): List<ScreenPerformance> {
-        return analyticsService.getSlowestScreens(limit)
+    override suspend fun getTotalEventCount(): Result<Int> = withContext(ioDispatcher) {
+        try {
+            val count = eventDao.getEventCount()
+            Result.success(count)
+        } catch (e: Exception) {
+            Log.e(TAG, "Failed to get event count: ${e.message}", e)
+            Result.failure(e)
+        }
     }
 
-    override suspend fun getPerformanceRegressions(): List<PerformanceRegression> {
-        return analyticsService.getPerformanceRegressions()
+    override suspend fun getDatabaseSize(): Result<Long> = withContext(ioDispatcher) {
+        try {
+            val dbFile = File(context.getDatabasePath("gaugex_events.db").path)
+            if (dbFile.exists()) {
+                val size = dbFile.length()
+                return@withContext Result.success(size)
+            }
+            Result.success(0L)
+        } catch (e: Exception) {
+            Log.e(TAG, "Failed to get database size: ${e.message}", e)
+            Result.failure(e)
+        }
     }
 
-    override suspend fun getPotentialMemoryLeaks(): List<MemoryLeakIndicator> {
-        return analyticsService.getPotentialMemoryLeaks()
+    override suspend fun optimizeDatabase(): Result<Unit> = withContext(ioDispatcher) {
+        try {
+            // First, ensure all processed events are removed
+            val purgedCount = eventDao.deleteEventsByStatus(EventStatus.TRANSMITTED.name)
+            Log.d(TAG, "Removed $purgedCount processed events")
+
+            // Execute VACUUM to reclaim space
+            try {
+//                eventDao.runVacuum()
+                Log.d(TAG, "Database optimized with VACUUM")
+            } catch (e: Exception) {
+                Log.w(TAG, "Failed to execute VACUUM: ${e.message}")
+                // Continue even if VACUUM fails
+            }
+
+            Result.success(Unit)
+        } catch (e: Exception) {
+            Log.e(TAG, "Failed to optimize database: ${e.message}", e)
+            Result.failure(e)
+        }
     }
 }

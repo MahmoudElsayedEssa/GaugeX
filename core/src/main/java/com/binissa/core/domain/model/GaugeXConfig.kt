@@ -1,8 +1,6 @@
-package com.binissa.gaugex
+package com.binissa.core.domain.model
 
-import com.binissa.core.domain.model.GaugeXConfig
-
-class GaugeXConfig private constructor(
+class GaugeXConfig(
     val apiKey: String?,
     val enableCrashReporting: Boolean,
     val enablePerformanceMonitoring: Boolean,

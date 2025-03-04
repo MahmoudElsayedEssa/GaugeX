@@ -6,7 +6,7 @@ import androidx.room.Room
 import androidx.room.RoomDatabase
 import com.binissa.core.data.datasource.local.model.EventEntity
 
-@Database(entities = [EventEntity::class], version = 1, exportSchema = false)
+@Database(entities = [EventEntity::class], version = 2, exportSchema = false)
 abstract class EventDatabase : RoomDatabase() {
     abstract fun eventDao(): EventDao
 
@@ -17,13 +17,8 @@ abstract class EventDatabase : RoomDatabase() {
         fun getInstance(context: Context): EventDatabase {
             return INSTANCE ?: synchronized(this) {
                 INSTANCE ?: Room.databaseBuilder(
-                    context.applicationContext,
-                    EventDatabase::class.java,
-                    "gaugex_events.db"
-                )
-                    .fallbackToDestructiveMigration()
-                    .build()
-                    .also { INSTANCE = it }
+                    context.applicationContext, EventDatabase::class.java, "gaugex_events.db"
+                ).build().also { INSTANCE = it }
             }
         }
     }
